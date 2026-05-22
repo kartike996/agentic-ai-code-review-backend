@@ -17,11 +17,37 @@ public class CodeReviewService {
     @Autowired
     private WebClient webClient;
     
-    @Autowired
     private PromptEngineeringService promptEngineeringService;
+    private final GitService gitService;
 
     @Value("${groq.api.key}")
     private String apiKey;
+    
+    public CodeReviewService(
+            PromptEngineeringService promptEngineeringService,
+            GitService gitService
+    ) {
+
+        this.promptEngineeringService = promptEngineeringService;
+        this.gitService = gitService;
+    }
+    
+    public CodeReviewResponse reviewLatestCommit() {
+
+        String gitChanges = gitService.getLatestCommitChanges();
+
+        if (gitChanges.isBlank()) {
+
+            return new CodeReviewResponse(
+                    "No changes found.",
+                    "No changes found.",
+                    "No changes found.",
+                    "No Git commit differences detected."
+            );
+        }
+
+        return reviewCode(gitChanges);
+    }
 
     public CodeReviewResponse reviewCode(String code) {
 

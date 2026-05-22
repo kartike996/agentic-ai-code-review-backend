@@ -23,4 +23,10 @@ public class CodeReviewController {
                 request.getCode()
         );
     }
+    
+    @GetMapping("/review/latest-commit")
+    public CodeReviewResponse reviewLatestCommit() {
+
+        return codeReviewService.reviewLatestCommit();
+    }
 }
