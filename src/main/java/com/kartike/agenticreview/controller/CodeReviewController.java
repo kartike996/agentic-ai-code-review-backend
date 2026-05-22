@@ -8,14 +8,14 @@ import com.kartike.agenticreview.dto.CodeReviewResponse;
 import com.kartike.agenticreview.service.CodeReviewService;
 
 @RestController
-@RequestMapping("/api/review")
+@RequestMapping("/api")
 @CrossOrigin(origins = "*")
 public class CodeReviewController {
 
     @Autowired
     private CodeReviewService codeReviewService;
 
-    @PostMapping
+    @PostMapping("/review")
     public CodeReviewResponse reviewCode(
             @RequestBody CodeReviewRequest request) {
 
