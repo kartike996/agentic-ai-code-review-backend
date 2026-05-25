@@ -6,6 +6,7 @@ public class CodeReviewResponse {
     private String securityReview;
     private String maintainabilityReview;
     private String overallReview;
+    private GitCommitInfo gitCommitInfo;
 
     public CodeReviewResponse() {
     }
@@ -51,5 +52,13 @@ public class CodeReviewResponse {
 
 	public void setOverallReview(String overallReview) {
 		this.overallReview = overallReview;
+	}
+	
+	public GitCommitInfo getGitCommitInfo() {
+	    return gitCommitInfo;
+	}
+
+	public void setGitCommitInfo(GitCommitInfo gitCommitInfo) {
+	    this.gitCommitInfo = gitCommitInfo;
 	}
 }

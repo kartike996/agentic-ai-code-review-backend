@@ -5,6 +5,8 @@ import java.io.InputStreamReader;
 
 import org.springframework.stereotype.Service;
 
+import com.kartike.agenticreview.dto.GitCommitInfo;
+
 @Service
 public class GitService {
 
@@ -15,7 +17,7 @@ public class GitService {
         try {
 
             ProcessBuilder processBuilder = new ProcessBuilder(
-                    "git",
+            		"C:\\Users\\Guest user\\AppData\\Local\\Programs\\Git\\cmd\\git.exe",
                     "diff",
                     "HEAD~1",
                     "HEAD"
@@ -46,5 +48,86 @@ public class GitService {
         }
 
         return output.toString();
+    }
+    
+    public GitCommitInfo getLatestCommitInfo() {
+
+        try {
+
+        	ProcessBuilder idProcess = new ProcessBuilder(
+        			"C:\\Users\\Guest user\\AppData\\Local\\Programs\\Git\\cmd\\git.exe",
+        		    "rev-parse",
+        		    "HEAD"
+        		);
+
+            idProcess.directory(
+                    new java.io.File(System.getProperty("user.dir"))
+            );
+
+            Process process1 = idProcess.start();
+
+            BufferedReader reader1 = new BufferedReader(
+                    new InputStreamReader(process1.getInputStream())
+            );
+
+            String commitId = reader1.readLine();
+
+            ProcessBuilder messageProcess = new ProcessBuilder(
+            		"C:\\Users\\Guest user\\AppData\\Local\\Programs\\Git\\cmd\\git.exe",
+                    "log",
+                    "-1",
+                    "--pretty=%B"
+            );
+
+            messageProcess.directory(
+                    new java.io.File(System.getProperty("user.dir"))
+            );
+
+            Process process2 = messageProcess.start();
+
+            BufferedReader reader2 = new BufferedReader(
+                    new InputStreamReader(process2.getInputStream())
+            );
+
+            String commitMessage = reader2.readLine();
+
+            ProcessBuilder filesProcess = new ProcessBuilder(
+            		"C:\\Users\\Guest user\\AppData\\Local\\Programs\\Git\\cmd\\git.exe",
+                    "diff-tree",
+                    "--no-commit-id",
+                    "--name-only",
+                    "-r",
+                    "HEAD"
+            );
+
+            filesProcess.directory(
+                    new java.io.File(System.getProperty("user.dir"))
+            );
+
+            Process process3 = filesProcess.start();
+
+            BufferedReader reader3 = new BufferedReader(
+                    new InputStreamReader(process3.getInputStream())
+            );
+
+            java.util.List<String> files = new java.util.ArrayList<>();
+
+            String line;
+
+            while ((line = reader3.readLine()) != null) {
+                files.add(line);
+            }
+
+            return new GitCommitInfo(
+                    commitId,
+                    commitMessage,
+                    files
+            );
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            return null;
+        }
     }
 }

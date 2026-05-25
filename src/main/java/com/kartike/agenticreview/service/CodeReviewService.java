@@ -1,5 +1,7 @@
 package com.kartike.agenticreview.service;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.concurrent.CompletableFuture;
 
 import com.kartike.agenticreview.dto.CodeReviewResponse;
+import com.kartike.agenticreview.dto.GitCommitInfo;
 
 
 @Service
@@ -46,7 +49,13 @@ public class CodeReviewService {
             );
         }
 
-        return reviewCode(gitChanges);
+        CodeReviewResponse response = reviewCode(gitChanges);
+
+        response.setGitCommitInfo(
+                gitService.getLatestCommitInfo()
+        );
+
+        return response;
     }
 
     public CodeReviewResponse reviewCode(String code) {
@@ -153,6 +162,77 @@ public class CodeReviewService {
 
         } catch (Exception e) {
             return "Error generating AI review.";
+        }
+    }
+    
+    public GitCommitInfo getLatestCommitInfo() {
+
+        try {
+
+            ProcessBuilder commitProcess = new ProcessBuilder(
+                    "git",
+                    "log",
+                    "-1",
+                    "--pretty=format:%H|%s"
+            );
+
+            commitProcess.directory(
+                    new java.io.File(System.getProperty("user.dir"))
+            );
+
+            Process process = commitProcess.start();
+
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream())
+            );
+
+            String commitData = reader.readLine();
+
+            if (commitData == null) {
+                return null;
+            }
+
+            String[] parts = commitData.split("\\|");
+
+            String commitId = parts[0];
+            String commitMessage = parts[1];
+
+            ProcessBuilder filesProcess = new ProcessBuilder(
+                    "git",
+                    "diff-tree",
+                    "--no-commit-id",
+                    "--name-only",
+                    "-r",
+                    "HEAD"
+            );
+
+            filesProcess.directory(
+                    new java.io.File(System.getProperty("user.dir"))
+            );
+
+            Process fileProcess = filesProcess.start();
+
+            BufferedReader fileReader = new BufferedReader(
+                    new InputStreamReader(fileProcess.getInputStream())
+            );
+
+            java.util.List<String> files = new java.util.ArrayList<>();
+
+            String line;
+
+            while ((line = fileReader.readLine()) != null) {
+                files.add(line);
+            }
+
+            return new GitCommitInfo(
+                    commitId,
+                    commitMessage,
+                    files
+            );
+
+        } catch (Exception e) {
+
+            return null;
         }
     }
 }
